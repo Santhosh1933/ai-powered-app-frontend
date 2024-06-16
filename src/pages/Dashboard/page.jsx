@@ -13,8 +13,11 @@ import {
 } from "@chakra-ui/react";
 import { SignedIn, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { json, useLocation, useNavigate } from "react-router-dom";
 import { getPlanQuizCount } from "../../../constants";
+import { useQuery } from "@tanstack/react-query";
+import { getUser } from "../../Api/ApiFunctions";
+import { chatSession } from "../../../GeminiAiModal";
 
 export const Dashboard = () => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -22,8 +25,15 @@ export const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const quizCount = getPlanQuizCount("free");
+  const { data: userData, isPending: userIsPending } = useQuery({
+    queryKey: ["user", isLoaded && user.id],
+    queryFn: getUser,
+    enabled: isLoaded,
+  });
 
+  const quizCount = getPlanQuizCount(
+    (userIsPending && userData?.plan) || "free"
+  );
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
@@ -34,7 +44,30 @@ export const Dashboard = () => {
   async function handleCreateQuiz(e) {
     e.preventDefault();
     console.log(e.target[0].value, e.target[1].value, e.target[2].value);
-    onClose();
+    const result = await chatSession.sendMessage(`
+      I will provide you with a quiz title : "${e.target[0].value}", quiz tech stack :"${e.target[1].value}", quiz level : "${e.target[2].value}". 
+      Please generate a set of 10 creative quiz questions in the specified format fo JSON  without considering any previous responses. The result should look like this:questions = [
+      {
+        question: "",
+        options: [
+          "",
+          "",
+          "",
+          "",
+        ],
+        answer: "",
+        explanation:
+          "'",
+      },
+      // more questions here
+    ]`);
+    const quizRes = result.response
+      .text()
+      .replace("```json", "")
+      .replace("```", "");
+    console.log(quizRes);
+    console.log(JSON.parse(quizRes));
+    // onClose();
   }
 
   const QuizCardLayout = ({ children }) => {
@@ -62,10 +95,20 @@ export const Dashboard = () => {
             <p>May 27 2024</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Button>Review</Button>
-            <Button onClick={()=>{
-              navigate(`test/1`)
-            }} className="bg-blue hover:bg-[#2b5ad1] " colorScheme="">
+            <Button
+              onClick={() => {
+                navigate(`review/1`);
+              }}
+            >
+              Review
+            </Button>
+            <Button
+              onClick={() => {
+                navigate(`test/1`);
+              }}
+              className="bg-blue hover:bg-[#2b5ad1] "
+              colorScheme=""
+            >
               Take Text
             </Button>
           </div>
@@ -98,7 +141,7 @@ export const Dashboard = () => {
           <QuizCard />
         </QuizCardLayout>
 
-        <div className="w-full rounded-lg text-white flex flex-col p-4 text-center gap-4 bg-gradient-to-r from-blue to-[#2b5ad1] h-40">
+        <div className="w-full rounded-lg text-white flex flex-col p-4 text-center gap-4 bg-gradient-to-r from-blue to-[#2b5ad1] ">
           <h1 className="text-white text-xl sm:text-2xl">
             You're on the Free Plan
           </h1>

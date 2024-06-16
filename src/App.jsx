@@ -4,17 +4,26 @@ import { Home } from "./pages/Home/page";
 import { Dashboard } from "./pages/Dashboard/page";
 import { Navbar } from "./components/Navbar";
 import { Quiz } from "./pages/Dashboard/Quiz/page";
+import { Review } from "./pages/Dashboard/Review/page";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <Routes>
-        <Route element={<Home />} path="/" />
-        <Route element={<Dashboard />} path="/dashboard" />
-        <Route element={<Quiz/>} path="/dashboard/test/:id"/>
-
-      </Routes>
+      <SignedOut>
+        <Routes>
+          <Route element={<Home />} path="/" />
+        </Routes>
+      </SignedOut>
+      <SignedIn>
+        <Routes>
+          <Route element={<Home />} path="/" />
+          <Route element={<Dashboard />} path="/dashboard" />
+          <Route element={<Quiz />} path="/dashboard/test/:id" />
+          <Route element={<Review />} path="/dashboard/review/:id" />
+        </Routes>
+      </SignedIn>
     </BrowserRouter>
   );
 }

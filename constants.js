@@ -25,3 +25,8 @@ export function getPlanQuizCount(plan) {
       break;
   }
 }
+
+export const endUrl =
+  import.meta.env.VITE_DEVELOPMENT == "true"
+    ? "http://localhost:8000"
+    : "http://localhost:8000";

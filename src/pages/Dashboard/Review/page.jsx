@@ -1,11 +1,11 @@
-import { Breadcrumb, BreadcrumbItem, Button } from "@chakra-ui/react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
 import { SignIn, useUser } from "@clerk/clerk-react";
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export const Quiz = () => {
-  const navigate = useNavigate();
+export const Review = () => {
 
+  const navigate = useNavigate();
 
   const questions = [
     {
@@ -130,113 +130,73 @@ export const Quiz = () => {
     },
   ];
 
-  const [selectedQuestion, setSelectedQuestion] = useState(0);
-  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
+  const AnswerSession = ({ question, i }) => {
+    return (
+      <div className="grid gap-4">
+        <h1 className="text-lg font-semibold text-red-600">
+          {i + 1} ) {question.question}
+        </h1>
+        <p>Answer : {question.answer}</p>
+        <div className="bg-yellow-100 p-4 rounded-md text-yellow-800">
+          {question.explanation}
+        </div>
+      </div>
+    );
+  };
 
-  function handleQuestionChange(ope) {
-    switch (ope) {
-      case "prev":
-        if (selectedQuestion > 0) {
-          setSelectedQuestion(selectedQuestion - 1);
-        }
-        break;
-
-      case "next":
-        if (selectedQuestion < questions.length - 1) {
-          setSelectedQuestion(selectedQuestion + 1);
-        } else {
-          console.log("Quiz Results:", answers);
-        }
-        break;
-
-      default:
-        break;
-    }
-  }
-  const isLastQuestion = selectedQuestion === questions.length - 1;
   return (
-    <div className="container py-8">
-      <Breadcrumb
-        spacing="8px"
-        className="pb-6"
-        //   separator={< color="gray.500" />}
-      >
-        <BreadcrumbItem>
-          <p
-            className="cursor-pointer hover:text-blue transition-all"
-            onClick={() => {
-              navigate("/");
-            }}
-          >
-            Home
-          </p>
-        </BreadcrumbItem>
+    <div>
+      <div className="container py-8">
+        <Breadcrumb
+          spacing="8px"
+          className="pb-6"
+          //   separator={< color="gray.500" />}
+        >
+          <BreadcrumbItem>
+            <p
+              className="cursor-pointer hover:text-blue transition-all"
+              onClick={() => {
+                navigate("/");
+              }}
+            >
+              Home
+            </p>
+          </BreadcrumbItem>
 
-        <BreadcrumbItem>
-          <p
-            className="cursor-pointer hover:text-blue transition-all"
-            onClick={() => {
-              navigate("/dashboard");
-            }}
-          >
-            Dashboard
-          </p>
-        </BreadcrumbItem>
+          <BreadcrumbItem>
+            <p
+              className="cursor-pointer hover:text-blue transition-all"
+              onClick={() => {
+                navigate("/dashboard");
+              }}
+            >
+              Dashboard
+            </p>
+          </BreadcrumbItem>
 
-        <BreadcrumbItem isCurrentPage>
-          <p className="cursor-pointer hover:text-blue transition-all">Quiz</p>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="bg-zinc-50 grid gap-3 border p-4">
-          <h1 className="text-xl sm:text-2xl font-semibold text-blue">
+          <BreadcrumbItem isCurrentPage>
+            <p className="cursor-pointer hover:text-blue transition-all">
+              Review
+            </p>
+          </BreadcrumbItem>
+        </Breadcrumb>
+        <div className="grid text-center sm:text-start gap-4 ">
+          <h1 className="text-xl sm:text-3xl font-semibold text-blue">
             Frontend
           </h1>
           <p className="text-gray-600">
             React.js, Node.js, MongoDB, SQL, Express.js
           </p>
-          <p className="font-semibold">Intermediate</p>
-          <p>27 May 2024</p>
+          <div className="flex justify-center sm:justify-start gap-x-6 flex-wrap">
+            <p className="font-semibold">Intermediate</p>
+            <p>27 May 2024</p>
+          </div>
         </div>
-        <div className="bg-zinc-50 md:col-span-2 flex flex-col gap-6 border p-4">
-          <h1 className="text-xl  font-semibold text-blue">
-            {selectedQuestion + 1} ) {questions[selectedQuestion].question}
-          </h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {questions[selectedQuestion].options.map((option, index) => (
-              <div
-                onClick={() => {
-                  let temp = [...answers];
-                  temp[selectedQuestion] = option;
-                  setAnswers(temp);
-                }}
-                key={index}
-                className={` p-2  rounded-md cursor-pointer  ${
-                  option == answers[selectedQuestion]
-                    ? " text-white bg-blue "
-                    : " bg-gray-100 "
-                }`}
-              >
-                {option}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              onClick={() => handleQuestionChange("prev")}
-              disabled={selectedQuestion === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              onClick={() => handleQuestionChange("next")}
-              className="bg-blue hover:bg-[#2b5ad1] "
-              colorScheme=""
-            >
-              {isLastQuestion ? "Submit" : "Next"}
-            </Button>
-          </div>
+        <h1 className=" text-blue text-2xl py-4 font-semibold">Mark : 5/10</h1>
+        <div className="grid gap-6">
+          {questions.map((question, i) => (
+            <AnswerSession question={question} i={i} />
+          ))}
         </div>
       </div>
     </div>
