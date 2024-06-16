@@ -9,19 +9,21 @@ import {
   ModalHeader,
   ModalOverlay,
   Progress,
+  Skeleton,
   useDisclosure,
 } from "@chakra-ui/react";
 import { SignedIn, SignIn, UserButton, useUser } from "@clerk/clerk-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { json, useLocation, useNavigate } from "react-router-dom";
 import { getPlanQuizCount } from "../../../constants";
-import { useQuery } from "@tanstack/react-query";
-import { getUser } from "../../Api/ApiFunctions";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createQuiz, getQuizzes, getUser } from "../../Api/ApiFunctions";
 import { chatSession } from "../../../GeminiAiModal";
 
 export const Dashboard = () => {
   const { isSignedIn, isLoaded, user } = useUser();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [aiLoading, setAiLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -29,6 +31,21 @@ export const Dashboard = () => {
     queryKey: ["user", isLoaded && user.id],
     queryFn: getUser,
     enabled: isLoaded,
+  });
+
+  const {
+    data: quizData,
+    isPending: quizIsPending,
+    refetch,
+  } = useQuery({
+    queryKey: ["quiz", isLoaded && user.id],
+    queryFn: getQuizzes,
+    enabled: isLoaded,
+  });
+
+  const { mutate, isPending, isError, error, data } = useMutation({
+    mutationKey: ["createQuiz"],
+    mutationFn: createQuiz,
   });
 
   const quizCount = getPlanQuizCount(
@@ -43,8 +60,10 @@ export const Dashboard = () => {
 
   async function handleCreateQuiz(e) {
     e.preventDefault();
-    console.log(e.target[0].value, e.target[1].value, e.target[2].value);
-    const result = await chatSession.sendMessage(`
+
+    try {
+      setAiLoading(true);
+      const prompt = `
       I will provide you with a quiz title : "${e.target[0].value}", quiz tech stack :"${e.target[1].value}", quiz level : "${e.target[2].value}". 
       Please generate a set of 10 creative quiz questions in the specified format fo JSON  without considering any previous responses. The result should look like this:questions = [
       {
@@ -60,15 +79,36 @@ export const Dashboard = () => {
           "'",
       },
       // more questions here
-    ]`);
-    const quizRes = result.response
-      .text()
-      .replace("```json", "")
-      .replace("```", "");
-    console.log(quizRes);
-    console.log(JSON.parse(quizRes));
-    // onClose();
+    ]`;
+      const result = await chatSession.sendMessage(prompt);
+      const quizRes = result.response
+        .text()
+        .replace("```json", "")
+        .replace("```", "");
+      if (JSON.parse(quizRes)) {
+        mutate({
+          userId: isLoaded && user.id,
+          questions: JSON.parse(quizRes),
+          level: e.target[2].value,
+          description: e.target[1].value,
+          title: e.target[0].value,
+        });
+      }
+    } catch (error) {
+    } finally {
+      setAiLoading(false);
+      if (!isPending) {
+        onClose();
+      }
+    }
   }
+
+  useEffect(() => {
+    if (data) {
+      refetch();
+      navigate(`test/${data._id}`);
+    }
+  }, [isPending, data]);
 
   const QuizCardLayout = ({ children }) => {
     return (
@@ -77,36 +117,35 @@ export const Dashboard = () => {
       </div>
     );
   };
-  const QuizCard = (props) => {
+  const QuizCard = ({ quiz }) => {
     return (
       <div className="relative cursor-pointer group">
         <div className="h-44 flex flex-col hover:shadow-lg gap-2 group-hover:bg-white  group-hover:-translate-x-2 group-hover:-translate-y-2 bg-zinc-50 p-4 rounded-md border  border-slate-500  transition-all">
           <h1 className="text-lg sm:text-xl text-blue font-medium">
-            Frontend Developer
+            {quiz.title}
           </h1>
           <p className="line-clamp-1  text-sm text-gray-600">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ex
-            consectetur adipisci, quidem dolor voluptas minus natus, iusto,
-            laudantium totam necessitatibus temporibus soluta ratione ut ab
-            minima fuga sunt non inventore!
+            {quiz.description}
           </p>
           <div className="flex justify-between  items-baseline">
-            <p>Intermediate</p>
-            <p>May 27 2024</p>
+            <p>{quiz.level}</p>
+            <p>{quiz.createdAt}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
+            {quiz.isCompleted && (
+              <Button
+                onClick={() => {
+                  navigate(`review/${quiz._id}`);
+                }}
+              >
+                Review
+              </Button>
+            )}
             <Button
               onClick={() => {
-                navigate(`review/1`);
+                navigate(`test/${quiz._id}`);
               }}
-            >
-              Review
-            </Button>
-            <Button
-              onClick={() => {
-                navigate(`test/1`);
-              }}
-              className="bg-blue hover:bg-[#2b5ad1] "
+              className={` ${ !quiz.isCompleted && " col-span-2 "} bg-blue hover:bg-[#2b5ad1] `}
               colorScheme=""
             >
               Take Text
@@ -118,28 +157,40 @@ export const Dashboard = () => {
     );
   };
 
+  const QuizCardSkeleton = () => {
+    return <Skeleton className="h-44"></Skeleton>;
+  };
+
   return (
     <div>
       <div className="container py-8">
-        <h1 className="text-xl sm:text-2xl font-semibold text-blue">
-          Dashboard
-        </h1>
-        <QuizCardLayout>
-          {4 < quizCount && (
-            <div
-              onClick={onOpen}
-              className="h-44 bg-slate-100 rounded-md border-[3px] border-slate-500 border-dashed flex justify-center items-center cursor-pointer hover:text-lg transition-all"
-            >
-              + Add Quiz
-            </div>
+        <div className="min-h-[55vh]">
+          <h1 className="text-xl sm:text-2xl font-semibold text-blue">
+            Dashboard
+          </h1>
+          {quizIsPending ? (
+            // Display 4 QuizCardSkeleton components while quizzes are loading
+            <QuizCardLayout>
+              {Array.from({ length: 4 }, (_, index) => (
+                <QuizCardSkeleton key={index} />
+              ))}
+            </QuizCardLayout>
+          ) : (
+            <QuizCardLayout>
+              {quizCount > quizData?.length && (
+                <div
+                  onClick={onOpen}
+                  className="h-44 bg-slate-100 rounded-md border-[3px] border-slate-500 border-dashed flex justify-center items-center cursor-pointer hover:text-lg transition-all"
+                >
+                  + Add Quiz
+                </div>
+              )}
+              {quizData.map((quiz, index) => (
+                <QuizCard key={index} quiz={quiz} />
+              ))}
+            </QuizCardLayout>
           )}
-          <QuizCard />
-          <QuizCard />
-          <QuizCard />
-          <QuizCard />
-          <QuizCard />
-          <QuizCard />
-        </QuizCardLayout>
+        </div>
 
         <div className="w-full rounded-lg text-white flex flex-col p-4 text-center gap-4 bg-gradient-to-r from-blue to-[#2b5ad1] ">
           <h1 className="text-white text-xl sm:text-2xl">
@@ -160,7 +211,7 @@ export const Dashboard = () => {
           <div className="w-full sm:w-3/4 md:w-2/4 mx-auto">
             <Progress
               hasStripe
-              value={20}
+              value={(quizData?.length / 5) * 100}
               colorScheme="green"
               className="rounded-full"
             />
@@ -221,6 +272,8 @@ export const Dashboard = () => {
                 </div>
 
                 <Button
+                  isLoading={isPending || aiLoading}
+                  loadingText="Creating"
                   type="submit"
                   className="bg-blue hover:bg-[#2b5ad1] "
                   colorScheme=""
