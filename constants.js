@@ -29,4 +29,4 @@ export function getPlanQuizCount(plan) {
 export const endUrl =
   import.meta.env.VITE_DEVELOPMENT == "true"
     ? "http://localhost:8000"
-    : "http://localhost:8000";
+    : "https://ai-powered-app-backend.onrender.com";
