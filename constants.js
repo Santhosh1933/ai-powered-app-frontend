@@ -1,4 +1,5 @@
 import PrimaryLogo from "./src/assets/logo.svg";
+import HeroImage from "./src/assets/image.png";
 export const NavMenu = [
   {
     name: "Dashboard",
@@ -15,11 +16,25 @@ export const NavMenu = [
 ];
 
 export const logo = PrimaryLogo;
+export const heroImage = HeroImage;
 
 export function getPlanQuizCount(plan) {
   switch (plan) {
     case "free":
       return 5;
+    case "premium":
+      return 30;
+
+    default:
+      break;
+  }
+}
+export function getPlanQuestionCount(plan) {
+  switch (plan) {
+    case "free":
+      return 10;
+    case "premium":
+      return 15;
 
     default:
       break;

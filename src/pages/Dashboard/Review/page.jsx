@@ -93,9 +93,16 @@ export const Review = () => {
                   <p> {data?.createdAt}</p>
                 </div>
               </div>
-              <h1 className=" text-blue text-2xl py-4 font-semibold">
-                Mark : {data?.totalScore} / {data?.questions.length}
-              </h1>
+              <p className="mt-2 sm:mt-4">
+                <strong className="text-3xl font-bold text-blue sm:text-4xl">
+                  {data?.totalScore}
+                </strong>
+
+                <span className="text-sm font-medium text-gray-700">
+                  / {data?.questions.length}
+                </span>
+              </p>
+
               <div className="grid gap-6">
                 {data?.questions.map((question, i) => (
                   <AnswerSession question={question} i={i} />

@@ -15,10 +15,11 @@ import {
 import { SignedIn, SignIn, UserButton, useUser } from "@clerk/clerk-react";
 import React, { useEffect, useState } from "react";
 import { json, useLocation, useNavigate } from "react-router-dom";
-import { getPlanQuizCount } from "../../../constants";
+import { getPlanQuestionCount, getPlanQuizCount } from "../../../constants";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createQuiz, getQuizzes, getUser } from "../../Api/ApiFunctions";
 import { chatSession } from "../../../GeminiAiModal";
+import { FaDownload } from "react-icons/fa6";
 
 export const Dashboard = () => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -48,9 +49,6 @@ export const Dashboard = () => {
     mutationFn: createQuiz,
   });
 
-  const quizCount = getPlanQuizCount(
-    (userIsPending && userData?.plan) || "free"
-  );
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
@@ -64,8 +62,16 @@ export const Dashboard = () => {
     try {
       setAiLoading(true);
       const prompt = `
-      I will provide you with a quiz title : "${e.target[0].value}", quiz tech stack :"${e.target[1].value}", quiz level : "${e.target[2].value}". 
-      Please generate a set of 10 creative quiz questions in the specified format fo JSON  without considering any previous responses. The result should look like this:questions = [
+      I will provide you with a quiz title : "${
+        e.target[0].value
+      }", quiz tech stack :"${e.target[1].value}", quiz level : "${
+        e.target[2].value
+      }". 
+      Please generate a set of ${getPlanQuestionCount(
+        userData?.plan
+      )} creative quiz question exactly i need ${getPlanQuestionCount(
+        userData?.plan
+      )} questions in the specified format fo JSON  without considering any previous responses. The result should look like this:questions = [
       {
         question: "",
         options: [
@@ -110,23 +116,58 @@ export const Dashboard = () => {
     }
   }, [isPending, data]);
 
+  function handleGenerateCSV(title, data) {
+    const csvContent = [
+      ["Question", "Options", "Answer", "Explanation"],
+      ...data.map((item) => [
+        item.question,
+        item.options.join("; "),
+        item.answer,
+        item.explanation,
+      ]),
+    ]
+      .map((e) => e.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${title}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   const QuizCardLayout = ({ children }) => {
     return (
-      <div className="py-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="py-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {children}
       </div>
     );
   };
+
   const QuizCard = ({ quiz }) => {
     return (
       <div className="relative cursor-pointer group">
-        <div className="h-44 flex flex-col hover:shadow-lg gap-2 group-hover:bg-white  group-hover:-translate-x-2 group-hover:-translate-y-2 bg-zinc-50 p-4 rounded-md border  border-slate-500  transition-all">
-          <h1 className="text-lg sm:text-xl text-blue font-medium">
-            {quiz.title}
-          </h1>
-          <p className="line-clamp-1  text-sm text-gray-600">
-            {quiz.description}
-          </p>
+        <div className="h-48 grid grid-rows-4 hover:shadow-lg gap-2 group-hover:bg-white  group-hover:-translate-x-2 group-hover:-translate-y-2 bg-zinc-50 p-4 rounded-md border  border-slate-500  transition-all">
+          <div className="flex  items-baseline justify-between">
+            <h1 className="text-lg sm:text-xl  text-blue font-medium">
+              {quiz.title}
+            </h1>
+            {userData?.plan !== "free" && (
+              <div
+                onClick={() => {
+                  handleGenerateCSV(quiz.title, quiz.questions);
+                }}
+                className=" bg-[#d6e0fa] p-2 rounded-full"
+              >
+                <FaDownload className="text-blue" />
+              </div>
+            )}
+          </div>
+          <p className="truncate  text-sm text-gray-600">{quiz.description}</p>
           <div className="flex justify-between  items-baseline">
             <p>{quiz.level}</p>
             <p>{quiz.createdAt}</p>
@@ -145,7 +186,9 @@ export const Dashboard = () => {
               onClick={() => {
                 navigate(`test/${quiz._id}`);
               }}
-              className={` ${ !quiz.isCompleted && " col-span-2 "} bg-blue hover:bg-[#2b5ad1] `}
+              className={` ${
+                !quiz.isCompleted && " col-span-2 "
+              } bg-blue hover:bg-[#2b5ad1] `}
               colorScheme=""
             >
               Take Text
@@ -169,7 +212,6 @@ export const Dashboard = () => {
             Dashboard
           </h1>
           {quizIsPending ? (
-            // Display 4 QuizCardSkeleton components while quizzes are loading
             <QuizCardLayout>
               {Array.from({ length: 4 }, (_, index) => (
                 <QuizCardSkeleton key={index} />
@@ -177,7 +219,7 @@ export const Dashboard = () => {
             </QuizCardLayout>
           ) : (
             <QuizCardLayout>
-              {quizCount > quizData?.length && (
+              {getPlanQuizCount(userData?.plan) > quizData?.length && (
                 <div
                   onClick={onOpen}
                   className="h-44 bg-slate-100 rounded-md border-[3px] border-slate-500 border-dashed flex justify-center items-center cursor-pointer hover:text-lg transition-all"
@@ -194,11 +236,12 @@ export const Dashboard = () => {
 
         <div className="w-full rounded-lg text-white flex flex-col p-4 text-center gap-4 bg-gradient-to-r from-blue to-[#2b5ad1] ">
           <h1 className="text-white text-xl sm:text-2xl">
-            You're on the Free Plan
+            You're on the {userData?.plan} Plan
           </h1>
           <p className=" text-sm">
-            You can create up to 5 quizzes, each containing up to 10 questions.
-            To extend your limits, consider upgrading your plan.
+            You can create up to {getPlanQuizCount(userData?.plan)} quizzes,
+            each containing up to {getPlanQuestionCount(userData?.plan)}{" "}
+            questions. To extend your limits, consider upgrading your plan.
           </p>
           <p
             className="text-sm w-fit self-center underline cursor-pointer"
@@ -211,7 +254,9 @@ export const Dashboard = () => {
           <div className="w-full sm:w-3/4 md:w-2/4 mx-auto">
             <Progress
               hasStripe
-              value={(quizData?.length / 5) * 100}
+              value={
+                (quizData?.length / getPlanQuizCount(userData?.plan)) * 100
+              }
               colorScheme="green"
               className="rounded-full"
             />
