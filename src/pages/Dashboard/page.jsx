@@ -201,7 +201,7 @@ export const Dashboard = () => {
   };
 
   const QuizCardSkeleton = () => {
-    return <Skeleton className="h-44"></Skeleton>;
+    return <Skeleton className="h-48"></Skeleton>;
   };
 
   return (
@@ -222,7 +222,7 @@ export const Dashboard = () => {
               {getPlanQuizCount(userData?.plan) > quizData?.length && (
                 <div
                   onClick={onOpen}
-                  className="h-44 bg-slate-100 rounded-md border-[3px] border-slate-500 border-dashed flex justify-center items-center cursor-pointer hover:text-lg transition-all"
+                  className="h-48 bg-slate-100 rounded-md border-[3px] border-slate-500 border-dashed flex justify-center items-center cursor-pointer hover:text-lg transition-all"
                 >
                   + Add Quiz
                 </div>

@@ -1,6 +1,7 @@
 import React from "react";
-
+import { useToast } from "@chakra-ui/react";
 export const UpgradePage = () => {
+  const toast = useToast();
   return (
     <div>
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
@@ -60,7 +61,10 @@ export const UpgradePage = () => {
                   />
                 </svg>
 
-                <span className="text-gray-700"> 15 Questions / Quiz (Apx)</span>
+                <span className="text-gray-700">
+                  {" "}
+                  15 Questions / Quiz (Apx)
+                </span>
               </li>
 
               <li className="flex items-center gap-1">
@@ -120,7 +124,20 @@ export const UpgradePage = () => {
               </li>
             </ul>
 
-            <p className="mt-8 cursor-pointer block rounded-full border border-blue bg-indigo-600 px-12 py-3 text-center text-sm font-medium text-white hover:bg-indigo-700 hover:ring-1 hover:ring-indigo-700 focus:outline-none focus:ring active:text-indigo-500">
+            <p
+              onClick={() =>
+                toast({
+                  title: "Oops!",
+                  description: "Premium version now in development",
+                  status: "warning",
+                  duration: 9000,
+                  isClosable: true,
+                  variant:"left-accent",
+                  position: 'top-right',
+                })
+              }
+              className="mt-8 cursor-pointer block rounded-full border border-blue bg-indigo-600 px-12 py-3 text-center text-sm font-medium text-white hover:bg-indigo-700 hover:ring-1 hover:ring-indigo-700 focus:outline-none focus:ring active:text-indigo-500"
+            >
               Get Started
             </p>
           </div>
