@@ -16,7 +16,7 @@ export const UpgradePage = () => {
               <p className="mt-2 sm:mt-4">
                 <strong className="text-3xl font-bold text-gray-900 sm:text-4xl">
                   {" "}
-                  50₹{" "}
+                  0₹{" "}
                 </strong>
 
                 <span className="text-sm font-medium text-gray-700">
@@ -199,7 +199,24 @@ export const UpgradePage = () => {
 
                 <span className="text-gray-700"> 10 Questions / Quiz</span>
               </li>
+              <li className="flex items-center gap-1">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  className="size-5 text-blue"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
+                </svg>
 
+                <span className="text-gray-700"> Export Quiz as CSV </span>
+              </li>
               <li className="flex items-center gap-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

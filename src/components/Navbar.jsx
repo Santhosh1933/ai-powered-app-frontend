@@ -29,7 +29,7 @@ export const Navbar = () => {
   const btnRef = useRef();
   const location = useLocation();
   return (
-    <div className="w-full bg-zinc-50 border-b ">
+    <div className="w-full bg-transparent">
       <div className="container flex items-center cursor-pointer justify-between py-8">
         <img
           src={logo}
@@ -108,6 +108,8 @@ export const Navbar = () => {
                           isLoaded && !isSignedIn
                             ? navigate("/")
                             : navigate(menu.navigate);
+                        }else{
+                          navigate(menu.navigate)
                         }
                         onClose();
                       }}

@@ -7,6 +7,8 @@ import { Quiz } from "./pages/Dashboard/Quiz/page";
 import { Review } from "./pages/Dashboard/Review/page";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import { UpgradePage } from "./pages/Upgrade/page";
+import { Guide } from "./pages/Guide/page";
+import { Footer } from "./components/Footer";
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
         <Routes>
           <Route element={<Home />} path="/" />
           <Route element={<UpgradePage />} path="/upgrade" />
+          <Route element={<Guide />} path="/faq" />
         </Routes>
       </SignedOut>
       <SignedIn>
@@ -25,8 +28,11 @@ function App() {
           <Route element={<UpgradePage />} path="/upgrade" />
           <Route element={<Quiz />} path="/dashboard/test/:id" />
           <Route element={<Review />} path="/dashboard/review/:id" />
+          <Route element={<Guide />} path="/faq" />
         </Routes>
       </SignedIn>
+      <Footer />
+
     </BrowserRouter>
   );
 }

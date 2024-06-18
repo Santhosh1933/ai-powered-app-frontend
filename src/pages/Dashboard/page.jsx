@@ -156,16 +156,15 @@ export const Dashboard = () => {
             <h1 className="text-lg sm:text-xl  text-blue font-medium">
               {quiz.title}
             </h1>
-            {userData?.plan !== "free" && (
-              <div
-                onClick={() => {
-                  handleGenerateCSV(quiz.title, quiz.questions);
-                }}
-                className=" bg-[#d6e0fa] p-2 rounded-full"
-              >
-                <FaDownload className="text-blue" />
-              </div>
-            )}
+
+            <div
+              onClick={() => {
+                handleGenerateCSV(quiz.title, quiz.questions);
+              }}
+              className=" bg-[#d6e0fa] p-2 rounded-full"
+            >
+              <FaDownload className="text-blue" />
+            </div>
           </div>
           <p className="truncate  text-sm text-gray-600">{quiz.description}</p>
           <div className="flex justify-between  items-baseline">
