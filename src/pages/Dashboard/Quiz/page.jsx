@@ -98,8 +98,8 @@ export const Quiz = () => {
       {isPending ? (
         <>Loading....</>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="bg-zinc-50 grid gap-3 border p-4">
+        <div className="grid grid-cols-1 min-h-screen gap-4 md:grid-cols-3">
+          <div className="bg-zinc-50 h-fit grid gap-3 border p-4">
             <h1 className="text-xl sm:text-2xl font-semibold text-blue">
               {data?.title}
             </h1>
@@ -107,7 +107,7 @@ export const Quiz = () => {
             <p className="font-semibold"> {data?.level}</p>
             <p> {data?.createdAt}</p>
           </div>
-          <div className="bg-zinc-50 md:col-span-2 flex flex-col gap-6 border p-4">
+          <div className="bg-zinc-50 h-fit md:col-span-2 flex flex-col gap-6 border px-4 py-7">
             <h1 className="text-xl  font-semibold text-blue">
               {selectedQuestion + 1} ){" "}
               {data?.questions[selectedQuestion].question}
