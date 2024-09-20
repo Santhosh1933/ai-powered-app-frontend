@@ -95,7 +95,3 @@ Access the application at `http://localhost:5173`.
 ## Conclusion
 
 This project provides a seamless way for users to create and take quizzes powered by AI. Ensure to test each feature thoroughly and handle any edge cases as needed.
-
----
-
-Feel free to modify any sections or add more details as you see fit!
